@@ -28,14 +28,11 @@ fs.rm(folderPathCopied, { recursive: true, force: true }, (err) => {
           path.join(folderPathCopied, file),
           (err) => {
             if (err) throw err;
-            console.log(file);
           },
         );
       });
     });
   });
-
-
 });
 
 
