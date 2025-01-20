@@ -4,36 +4,37 @@ const path = require('path');
 const folderPathForCopying = path.join(__dirname, 'files');
 const folderPathCopied = path.join(__dirname, 'files-copy');
 
-//removing folder
-fs.rm(folderPathCopied, { recursive: true, force: true }, (err) => {
-  if (err) {
-    console.error('Error removing directory:', err);
-    return;
-  };
-
-  //creating folder
-  fs.mkdir(folderPathCopied, { recursive: true }, (err) => {
+function copyDirectory(sourcePath, resultPath) {
+  fs.mkdir(resultPath, { recursive: true }, (err) => {
     if (err) {
-      console.error('Error creating directory:', err);
-      return
+      console.error('Error creating folder', err);
     }
-
-    //copying files
-    fs.readdir(folderPathForCopying, (err, files) => {
-      if (err) throw err;
-      files.forEach((file) => {
-
-        fs.copyFile(
-          path.join(folderPathForCopying, file),
-          path.join(folderPathCopied, file),
-          (err) => {
-            if (err) throw err;
-          },
-        );
-      });
+    fs.readdir(sourcePath, { withFileTypes: true }, (err, files) => {
+      if (err) {
+        console.error('Error reading the directory', err);
+        return;
+      } else {
+        files.forEach((file) => {
+          const sourceFile = path.join(sourcePath, file.name);
+          const resultFile = path.join(resultPath, file.name);
+          fs.stat(sourceFile, (err, stat) => {
+            if (err) {
+              console.error('Error reading stat', err);
+            }
+            if (stat.isDirectory()) {
+              copyDirectory(sourceFile, resultFile);
+            } else {
+              fs.copyFile(sourceFile, resultFile, (err) => {
+                if (err) {
+                  console.error('Error copying a file', err);
+                }
+              });
+            }
+          });
+        });
+      }
     });
   });
-});
-
-
+}
+copyDirectory(folderPathForCopying, folderPathCopied);
 
